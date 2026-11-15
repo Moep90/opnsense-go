@@ -108,4 +108,18 @@ func TestHAProxyRuleChain(t *testing.T) {
 	if got.Expression != "path_beg" || got.PathBeg != "/.well-known/acme-challenge/" {
 		t.Fatalf("acl read back wrong: %+v", got)
 	}
+
+	// An http-request rule without conditions applies to every request.
+	redirect := &Action{Enabled: "1", Name: "ogo-test-redirect", TestType: "if", LinkedAcls: api.SelectedMapList{}, Operator: "and",
+		Type: "http-request", HttpRequestAction: "redirect", HttpRequestOption: "scheme https code 301"}
+	redirectID := must(c.AddAction(ctx, redirect))
+	t.Cleanup(func() { _ = c.DeleteAction(ctx, redirectID) })
+	gotRedirect, err := c.GetAction(ctx, redirectID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotRedirect.Type != "http-request" || gotRedirect.HttpRequestAction != "redirect" ||
+		gotRedirect.HttpRequestOption != "scheme https code 301" || len(gotRedirect.LinkedAcls) != 0 {
+		t.Fatalf("redirect read back wrong: %+v", gotRedirect)
+	}
 }

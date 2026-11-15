@@ -171,6 +171,13 @@ resources:
       - name: UseBackend
         type: SelectedMap
         key: use_backend
+      # Type "http-request": the keyword (e.g. redirect) and its arguments (e.g. scheme https code 301).
+      - name: HttpRequestAction
+        type: SelectedMap
+        key: http_request_action
+      - name: HttpRequestOption
+        type: string
+        key: http_request_option
 
   # OPNsense's setFrontend applies just the posted keys. Frontend carries the
   # settings of a plain frontend without the rule list, FrontendActions only the

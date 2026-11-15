@@ -20,14 +20,16 @@ var ActionOpts = api.ReqOpts{
 // Data structs
 
 type Action struct {
-	Enabled     string              `json:"enabled"`
-	Name        string              `json:"name"`
-	Description string              `json:"description"`
-	TestType    api.SelectedMap     `json:"testType"`
-	LinkedAcls  api.SelectedMapList `json:"linkedAcls"`
-	Operator    api.SelectedMap     `json:"operator"`
-	Type        api.SelectedMap     `json:"type"`
-	UseBackend  api.SelectedMap     `json:"use_backend"`
+	Enabled           string              `json:"enabled"`
+	Name              string              `json:"name"`
+	Description       string              `json:"description"`
+	TestType          api.SelectedMap     `json:"testType"`
+	LinkedAcls        api.SelectedMapList `json:"linkedAcls"`
+	Operator          api.SelectedMap     `json:"operator"`
+	Type              api.SelectedMap     `json:"type"`
+	UseBackend        api.SelectedMap     `json:"use_backend"`
+	HttpRequestAction api.SelectedMap     `json:"http_request_action"`
+	HttpRequestOption string              `json:"http_request_option"`
 }
 
 // CRUD operations
