@@ -20,13 +20,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// fullFrontend carries the fields a new frontend needs; Frontend itself only models the rule list.
-type fullFrontend struct {
-	Name string `json:"name"`
-	Bind string `json:"bind"`
-	Mode string `json:"mode"`
-}
-
 func TestHAProxyRuleChain(t *testing.T) {
 	c := &Controller{Api: api.NewClient(api.Options{
 		Uri:           os.Getenv("OPNSENSE_URI"),
@@ -65,14 +58,15 @@ func TestHAProxyRuleChain(t *testing.T) {
 	actionA := newAction("ogo-test-a")
 	actionZ := newAction("ogo-test-z")
 
-	frontendID := must(api.Add(c.Client(), ctx, FrontendOpts, &fullFrontend{Name: "ogo-test-frontend", Bind: "127.0.0.1:18080", Mode: "http"}))
+	frontend := &Frontend{Enabled: "1", Name: "ogo-test-frontend", Bind: api.SelectedMapList{"127.0.0.1:18080"}, Mode: "http", DefaultBackend: api.SelectedMap(backendID)}
+	frontendID := must(c.AddFrontend(ctx, frontend))
 	t.Cleanup(func() { _ = c.DeleteFrontend(ctx, frontendID) })
 
-	for _, want := range []api.SelectedMapListOrdered{{actionZ, actionA}, {actionA, actionZ}, {}} {
-		if err := c.UpdateFrontend(ctx, frontendID, &Frontend{LinkedActions: want}); err != nil {
-			t.Fatalf("UpdateFrontend(%v): %v", want, err)
+	for _, want := range []api.SelectedMapListOrdered{{actionZ, actionA}, {actionA, actionZ}} {
+		if err := c.UpdateFrontendActions(ctx, frontendID, &FrontendActions{LinkedActions: want}); err != nil {
+			t.Fatalf("UpdateFrontendActions(%v): %v", want, err)
 		}
-		got, err := c.GetFrontend(ctx, frontendID)
+		got, err := c.GetFrontendActions(ctx, frontendID)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -81,15 +75,30 @@ func TestHAProxyRuleChain(t *testing.T) {
 		}
 	}
 
-	// The partial update must leave the unmodelled frontend fields alone.
-	var name struct {
-		Name string `json:"name"`
-	}
-	if _, err := api.Get(c.Client(), ctx, FrontendOpts, &name, frontendID); err != nil {
+	// Updating the frontend settings must keep the rule list ...
+	frontend.Description = "updated"
+	if err := c.UpdateFrontend(ctx, frontendID, frontend); err != nil {
 		t.Fatal(err)
 	}
-	if name.Name != "ogo-test-frontend" {
-		t.Fatalf("frontend name changed by partial update: %q", name.Name)
+	rules, err := c.GetFrontendActions(ctx, frontendID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(rules.LinkedActions, api.SelectedMapListOrdered{actionA, actionZ}) {
+		t.Fatalf("frontend update changed linkedActions: %v", rules.LinkedActions)
+	}
+
+	// ... and updating the rule list must keep the settings.
+	if err := c.UpdateFrontendActions(ctx, frontendID, &FrontendActions{LinkedActions: api.SelectedMapListOrdered{}}); err != nil {
+		t.Fatal(err)
+	}
+	gotFE, err := c.GetFrontend(ctx, frontendID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gotFE.Name != "ogo-test-frontend" || gotFE.Description != "updated" || gotFE.Mode != "http" ||
+		gotFE.DefaultBackend.String() != backendID || !reflect.DeepEqual(gotFE.Bind, api.SelectedMapList{"127.0.0.1:18080"}) {
+		t.Fatalf("frontend read back wrong after rule list update: %+v", gotFE)
 	}
 
 	got, err := c.GetAcl(ctx, aclID)

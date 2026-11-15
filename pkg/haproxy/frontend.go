@@ -20,7 +20,12 @@ var FrontendOpts = api.ReqOpts{
 // Data structs
 
 type Frontend struct {
-	LinkedActions api.SelectedMapListOrdered `json:"linkedActions"`
+	Enabled        string              `json:"enabled"`
+	Name           string              `json:"name"`
+	Description    string              `json:"description"`
+	Bind           api.SelectedMapList `json:"bind"`
+	Mode           api.SelectedMap     `json:"mode"`
+	DefaultBackend api.SelectedMap     `json:"defaultBackend"`
 }
 
 // CRUD operations

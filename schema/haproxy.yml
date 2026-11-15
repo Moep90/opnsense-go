@@ -172,10 +172,41 @@ resources:
         type: SelectedMap
         key: use_backend
 
-  # Only the rule list is modelled so far. OPNsense's setFrontend applies just
-  # the posted keys, so an update leaves the frontend's other settings alone.
+  # OPNsense's setFrontend applies just the posted keys. Frontend carries the
+  # settings of a plain frontend without the rule list, FrontendActions only the
+  # rule list, so updating one never resets the other.
   - name: Frontend
     filename: frontend
+    monad: frontend
+    endpoints:
+      add: "/haproxy/settings/addFrontend"
+      get: "/haproxy/settings/getFrontend"
+      update: "/haproxy/settings/setFrontend"
+      delete: "/haproxy/settings/delFrontend"
+    attrs:
+      - name: Enabled
+        type: string
+        key: enabled
+      - name: Name
+        type: string
+        key: name
+      - name: Description
+        type: string
+        key: description
+      - name: Bind
+        type: SelectedMapList
+        key: bind
+      - name: Mode
+        type: SelectedMap
+        key: mode
+      - name: DefaultBackend
+        type: SelectedMap
+        key: defaultBackend
+
+  # Use only Get/Update: Add cannot create a valid frontend from the rule list
+  # alone, and Delete removes the whole frontend.
+  - name: FrontendActions
+    filename: frontend_actions
     monad: frontend
     endpoints:
       add: "/haproxy/settings/addFrontend"
