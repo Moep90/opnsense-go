@@ -59,7 +59,7 @@ jobs:
               "ipsec":    ["ipsec"],
               "firewall": ["firewall"],
               "other":    ["api", "auth", "bind", "core", "cron", "diagnostics",
-                           "dyndns", "interfaces", "kea", "monit", "openvpn",
+                           "dyndns", "haproxy", "interfaces", "kea", "monit", "openvpn",
                            "quagga", "routes", "syslog", "trust", "unbound",
                            "wireguard"],
           }

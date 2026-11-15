@@ -80,6 +80,7 @@ OPNsense returns enumerated fields as a map of `{key: {selected, value}}` object
 - `api.SelectedMap` — single selection; marshals/unmarshals as a plain string key.
 - `api.SelectedMapList` — multi-selection; marshals as comma-separated string.
 - `api.SelectedMapListNL` — multi-selection; marshals with newline separators.
+- `api.SelectedMapListOrdered` — multi-selection that keeps order; for ModelRelationFields with `<Sorted>Y</Sorted>`, where OPNsense returns the selected keys first and in saved order (e.g. HAProxy `linkedActions`). The other two sort, which loses that order.
 
 When constructing a resource, assign the key directly: `Type: api.SelectedMap("host")`.
 

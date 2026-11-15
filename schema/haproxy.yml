@@ -1,0 +1,188 @@
+---
+name: haproxy
+reconfigureEndpoint: "/haproxy/service/reconfigure"
+resources:
+  - name: Server
+    filename: server
+    monad: server
+    endpoints:
+      add: "/haproxy/settings/addServer"
+      get: "/haproxy/settings/getServer"
+      update: "/haproxy/settings/setServer"
+      delete: "/haproxy/settings/delServer"
+    attrs:
+      - name: Enabled
+        type: string
+        key: enabled
+      - name: Name
+        type: string
+        key: name
+      - name: Description
+        type: string
+        key: description
+      - name: Address
+        type: string
+        key: address
+      - name: Port
+        type: string
+        key: port
+      - name: Mode
+        type: SelectedMap
+        key: mode
+      - name: SSL
+        type: string
+        key: ssl
+      - name: SSLVerify
+        type: string
+        key: sslVerify
+
+  - name: Backend
+    filename: backend
+    monad: backend
+    endpoints:
+      add: "/haproxy/settings/addBackend"
+      get: "/haproxy/settings/getBackend"
+      update: "/haproxy/settings/setBackend"
+      delete: "/haproxy/settings/delBackend"
+    attrs:
+      - name: Enabled
+        type: string
+        key: enabled
+      - name: Name
+        type: string
+        key: name
+      - name: Description
+        type: string
+        key: description
+      - name: Mode
+        type: SelectedMap
+        key: mode
+      - name: Algorithm
+        type: SelectedMap
+        key: algorithm
+      - name: LinkedServers
+        type: SelectedMapList
+        key: linkedServers
+      - name: HealthCheckEnabled
+        type: string
+        key: healthCheckEnabled
+
+  - name: Acl
+    filename: acl
+    monad: acl
+    endpoints:
+      add: "/haproxy/settings/addAcl"
+      get: "/haproxy/settings/getAcl"
+      update: "/haproxy/settings/setAcl"
+      delete: "/haproxy/settings/delAcl"
+    attrs:
+      - name: Name
+        type: string
+        key: name
+      - name: Description
+        type: string
+        key: description
+      - name: Expression
+        type: SelectedMap
+        key: expression
+      - name: Negate
+        type: string
+        key: negate
+      - name: CaseSensitive
+        type: string
+        key: caseSensitive
+      # One value field per expression; the expression name selects which one HAProxy uses.
+      - name: Hdr
+        type: string
+        key: hdr
+      - name: HdrBeg
+        type: string
+        key: hdr_beg
+      - name: HdrEnd
+        type: string
+        key: hdr_end
+      - name: HdrReg
+        type: string
+        key: hdr_reg
+      - name: HdrSub
+        type: string
+        key: hdr_sub
+      - name: Path
+        type: string
+        key: path
+      - name: PathBeg
+        type: string
+        key: path_beg
+      - name: PathDir
+        type: string
+        key: path_dir
+      - name: PathEnd
+        type: string
+        key: path_end
+      - name: PathReg
+        type: string
+        key: path_reg
+      - name: PathSub
+        type: string
+        key: path_sub
+      - name: Src
+        type: string
+        key: src
+      - name: SSLFcSNI
+        type: string
+        key: ssl_fc_sni
+      - name: SSLSNI
+        type: string
+        key: ssl_sni
+      - name: CustomAcl
+        type: string
+        key: custom_acl
+
+  - name: Action
+    filename: action
+    monad: action
+    endpoints:
+      add: "/haproxy/settings/addAction"
+      get: "/haproxy/settings/getAction"
+      update: "/haproxy/settings/setAction"
+      delete: "/haproxy/settings/delAction"
+    attrs:
+      - name: Enabled
+        type: string
+        key: enabled
+      - name: Name
+        type: string
+        key: name
+      - name: Description
+        type: string
+        key: description
+      - name: TestType
+        type: SelectedMap
+        key: testType
+      - name: LinkedAcls
+        type: SelectedMapList
+        key: linkedAcls
+      - name: Operator
+        type: SelectedMap
+        key: operator
+      - name: Type
+        type: SelectedMap
+        key: type
+      - name: UseBackend
+        type: SelectedMap
+        key: use_backend
+
+  # Only the rule list is modelled so far. OPNsense's setFrontend applies just
+  # the posted keys, so an update leaves the frontend's other settings alone.
+  - name: Frontend
+    filename: frontend
+    monad: frontend
+    endpoints:
+      add: "/haproxy/settings/addFrontend"
+      get: "/haproxy/settings/getFrontend"
+      update: "/haproxy/settings/setFrontend"
+      delete: "/haproxy/settings/delFrontend"
+    attrs:
+      - name: LinkedActions
+        type: SelectedMapListOrdered
+        key: linkedActions

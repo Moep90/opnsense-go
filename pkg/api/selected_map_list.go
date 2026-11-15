@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"sort"
 	"strings"
@@ -78,6 +79,60 @@ func (s *SelectedMapListNL) MarshalJSON() ([]byte, error) {
 }
 
 func (s *SelectedMapListNL) String() string {
+	return strings.Join(*s, ",")
+}
+
+/*
+	SelectedMapListOrdered keeps the selected keys in the order of the JSON object.
+
+	OPNsense returns the selected options of a ModelRelationField with <Sorted>Y</Sorted>
+	first and in their saved order (e.g. the rule list of a HAProxy frontend, where the
+	order is the evaluation order). Marshal joins the keys in the given order.
+*/
+
+type SelectedMapListOrdered []string
+
+func (s *SelectedMapListOrdered) UnmarshalJSON(data []byte) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	tok, err := dec.Token()
+	if err != nil {
+		return err
+	}
+	if tok != json.Delim('{') {
+		// OPNsense sends [] when there are no options at all.
+		var emptyList []string
+		if err := json.Unmarshal(data, &emptyList); err != nil {
+			return err
+		}
+		*s = SelectedMapListOrdered{}
+		return nil
+	}
+
+	keys := SelectedMapListOrdered{}
+	for dec.More() {
+		keyTok, err := dec.Token()
+		if err != nil {
+			return err
+		}
+		var v struct {
+			Selected any `json:"selected"`
+		}
+		if err := dec.Decode(&v); err != nil {
+			return err
+		}
+		if b, ok := v.Selected.(bool); (ok && b) || v.Selected == float64(1) {
+			keys = append(keys, keyTok.(string))
+		}
+	}
+	*s = keys
+	return nil
+}
+
+func (s *SelectedMapListOrdered) MarshalJSON() ([]byte, error) {
+	return json.Marshal(strings.Join(*s, ","))
+}
+
+func (s *SelectedMapListOrdered) String() string {
 	return strings.Join(*s, ",")
 }
 
